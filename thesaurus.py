@@ -126,7 +126,14 @@ class Deskriptorsatz:
                 
         except:
             print "Methode op_add(rel,argument) wurde nicht erfolgreich benutzt.\nBitten lesen __doc__"
-            
+
+    def op_del(self,rel,bg):
+        """
+        Mehtode op_del(self, rel, bg):
+        rel muss 'BF','BS','SB','OB','UB' oder'VB' sein.
+        bg kann entweder ein String oder eine List sein.
+        """
+        
         
 
 
