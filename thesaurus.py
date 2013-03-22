@@ -3,9 +3,9 @@
 #Project: Projektseminar Gruppe 412
 #Project Member: Yuankun LUO & Jingwen Wu
 #Author: Yuankun LUO 2039781
-#Kommentarsprache： Deusche, Chinesische,weil alle die zwei Gruppenteilnehmen chinesen sind.
+#Kommentarsprache： Deusche & Chinesische,weil alle die zwei Gruppenteilnehmen chinesen sind.
 #Email: yuankun.luo@hhu.de
-#Version: 2013.0.2
+#Version: 2013.03.22
 
 """
 Das Programm ist ein einfacher ThesaurusDatabank.
@@ -45,13 +45,13 @@ class Thesaurus():
         self.projectname=name
         self.inhalts={}
     def __repr__(self):
-        return "{projectname}\n{line}\n{de}\n{line}".format(projectname=self.projectname,line='*'*40,de=self.inhalts)
+        return "   {projectname}\n{line}\n{de}\n{line}".format(projectname=self.projectname,line='-'*20,de=self.inhalts.keys())
 
     def search_ds(self, bf):
         """
         Hier wird eine Funktionen definiert, die mit Suchen nach Deskriptorsatz zu tun haben.
 
-        这里定义了搜索方法，搜索应该分两种，一种是搜索词条，如果词条搜索成功，就返回词词条；
+        搜索词条方法，搜索应该分两种，一种是搜索词条，如果词条搜索成功，就返回词词条；
         如果词条搜索失败，就调用关键字搜索，搜索每一个词条内的每一个子项。
         这里定义的是搜索词条方法
         """
@@ -64,6 +64,54 @@ class Thesaurus():
                     raise Exception()
             except:
                 print "Sorry! {bf} wird nicht gefunden".format(bf=bf)
+                
+    def add_ds(self,ds):
+        """
+        Methode add_ds(self,ds) ist eine Instancemethode von Class Thesaurus.
+        Sie fuegt eine Deskriptorsatz in Thesaurus inhalts.
+        Sie braucht eine Instance von Class Deskriptorsatz als notwendig Argument.
+
+        添加词条方法，用于将一个词条类的实例添加到辞典累实例的inhalts属性内。
+        作为必要参数，词条类的实例引用必须传递
+        """
+        if isinstance(ds,Deskriptorsatz):
+            try:
+                if not self.inhalts.has_key(ds.deskriptor):
+                    self.inhalts[ds.deskriptor]=ds
+                    print self.inhalts.keys()
+                else:
+                    raise Exception()
+            except:
+                print "Exception:\n{t} has schon {ds}, Sie koennen nicht Dupulicate hinzufugen.".format(t=self.projectname,ds=ds.deskriptor)
+                print self.inhalts.keys()
+        else:
+            print "Error:\n Methode add_ds() braucht eine Instance von Class Deskriptorsatz als Argument."
+        
+                
+
+
+    def delete_ds(self, bf):
+        """
+        delete_ds(self,bf) ist eine Methode von Instance der Thesaurus,
+        um einen gegebenen Deskriptorsatz zu loeschen.
+        Sie brucht ein String bf als formale Argument.
+
+        删除词条方法：是一个辞典Thesaurus类的实例方法，由实例来调用。
+        需要传入一个字符串参数，用作被删除的目标。
+        """
+        if isinstance(bf,str):
+            try:
+                if self.inhalts.has_key(bf):
+                    self.inhalts.pop(bf)
+                    print "{bf} wird erfolgricht von {t} entfernt!".format(bf=bf,t=self.projectname)
+                    print "   {projectname}\n{line}\n{de}\n{line}".format(projectname=self.projectname,line='-'*20,de=self.inhalts.keys())
+                else:
+                    raise Exception()
+            except:
+                print "Exception:\nBei Anrufen von delete_ds(self,bf).\nEs gibt keine {bf} in {t}\n{t} has die forgenden Deskripotorsaetze:".format(bf=bf, t=self.projectname)
+                print self.inhalts.keys()
+        else:
+            print "Error:\ndelete_ds(self,bf) barucht eine Instance von Thesauruse anzurufen\n und ein String als argument!"
 
     def save_thesaurus(self,datenbank):
         """
@@ -95,10 +143,10 @@ class Thesaurus():
             f=open(datenbank,'rb')
             self.inhalts=pickle.load(f)
             f.close()
-            print "Thesaurus wird erfolgricht gelaedt!\n"
+            print "Thesaurus {name} wird erfolgricht gelaedt!".format(name=self.projectname)
             print self.inhalts.keys()
         except:
-            print "Wird nicht erfolgricht gelaedet!\n"
+            print "Wird nicht erfolgricht gelaedet!"
     
     
 
@@ -139,9 +187,8 @@ class Deskriptorsatz:
         在构造器完成后会打印这个已经构造好的词条。
         """
         try:
-            for e in t1.inhalts.keys():
-                if e is deskriptor:
-                    raise Exception()
+            if not isinstance(deskriptor,str):
+                raise Exception()
             self.deskriptor=deskriptor
             self.bf=bf
             self.bs=bs
@@ -149,15 +196,16 @@ class Deskriptorsatz:
             self.ob=ob
             self.ub=ub
             self.vb=vb
-            t1.inhalts[deskriptor]=self
             print self
         except:
-            print "__init__() wird nicht erfolgrich angeruft.\nVielleicht du hast ein schon existierte Deskriptor hinzufuegt!\n "
+            print "Exception:\n__init__() wird nicht erfolgrich angeruft.\nVielleicht du hast ein schon existierte Deskriptor hinzufuegt!\n "
         
     def __repr__(self):
         """
-        @override __repr__ funktion, um die print Funktion zu definieren wir folgende Stil:
+        @override __repr__ funktion,
+        um die print Funktion zu definieren wie folgende Stil:
         @重载的运算符 __repr__ 会将print函数的格式改变，打印下列样式：
+        
                   Infowiss
             ------------------------------
             BF:['Bf1', 'Bf2']
@@ -167,16 +215,25 @@ class Deskriptorsatz:
             UB:['UB1', 'UB2']
             VB:['VB2', 'VB1']
             ==============================
+            
         """
         return "\n  {deskriptor}\n{line}\nBF:{bf}\nBS:{bs}\nSB:{sb}\nOB:{ob}\nUB:{ub}\nVB:{vb}\n{stars}\n".format(deskriptor=self.deskriptor, bf=self.bf, bs=self.bs,sb=self.sb,ob=self.ob,ub=self.ub,vb=self.vb, stars='='*30,line='-'*30)
 
+
     """
-    Hier werden alle reset_reg() methode definiert.
+    Hier werden alle reset_xxx() methode definiert.
     rest_reg() methoden machen alle Properties von Deskriptor leer.
-        
-    这里定义一个reset_rel()方法，用作把每一个词条的各项子类清空。
+    
+    这里定义一些reset_xxx()方法，用作把每一个词条的各项子类清空。
     """
-    def reset_all(self):
+
+    def reset_all():
+        """
+        Hier werden alle reset_xxx() methode definiert.
+        rest_reg() methoden machen alle Properties von Deskriptor leer.
+    
+        这里定义一些reset_xxx()方法，用作把每一个词条的各项子类清空。
+        """
         self.bf = [];
         self.bs = [];
         self.sb = [];
@@ -234,16 +291,16 @@ class Deskriptorsatz:
             print "Methode reset_bf ist kappt"
 
 
-    """
-    Hier werde alle add_reg() methode definiert.
-    reg kann als bf, bs ... benennen.
-    Nur Sring oder eine Liste von String(s) durfen hinzufuegt.
-   
-    add_reg() 方法：
-    每个reg代表每一个子项，用小写字母表示，比如bs，bf...
-    添加时会检测形式参数，必须是字符串或者字符串的列表才能被添加成功。
-    添加成功打印一个更新后的词条。
-    """
+    #------------------------------------------------------
+    #Hier werde alle add_reg() methode definiert.
+    #reg kann als bf, bs ... benennen.
+    #Nur Sring oder eine Liste von String durfen hinzufuegt werden.
+    #add_reg() 方法：
+    #
+    #每个reg代表字条实例的每一个子项，用小写字母表示，比如bs，bf...
+    #添加时会检测形式参数，必须是字符串或者字符串的列表才能被添加成功。
+    #添加成功打印一个更新后的词条。
+    #------------------------------------------------------
 
     def add_bf(self,newbf):
         pass
@@ -252,15 +309,15 @@ class Deskriptorsatz:
 
 
 
-    """
-    Hier werden alle del_reg() methode definiert.
-    Um jedes Item unter verschiedenen Properties zu loeschen.
-    Wenn man eine Properties oder ganz Deskriptor leer machen,
-    dann benutzen rest_reg() methoden.
-
-    这里定义一些删除字条字项的方法，因为我们用字典来保存子项的每一个属性，如果是删除子项里面的一个字符串，
-    则需要传入字符串作为形式参数。如果是想清空子项，或者完全清空，将调用reset_reg()方法。
-    """
+    #------------------------------------------------------
+    #Hier werden alle del_reg() methode definiert.
+    #Um jedes Item unter verschiedenen Properties zu loeschen.
+    #Wenn man eine Properties oder ganz Deskriptor leer machen,
+    #dann benutzen rest_reg() methoden.
+    #
+    #这里定义一些删除字条字项的方法，因为我们用字典来保存子项的每一个属性，如果是删除子项里面的一个字符串，
+    #则需要传入字符串作为形式参数。如果是想清空子项，或者完全清空，将调用reset_reg()方法。
+    #------------------------------------------------------
     def del_bf(self,bf):
         try:
             if isinstance(bf,str):
@@ -285,6 +342,8 @@ class Deskriptorsatz:
 if __name__ == '__main__':
     t1=Thesaurus('Project412')
     t1.load_thesaurus('t1_data.dat')
+    des=Deskriptorsatz
+    ds4=des('CCTV')
     '''
     d1=Deskriptorsatz('Infowiss',['Bf1','Bf2'],['BS1','BS2'],['SB'],['OB1','OB2'],['UB1','UB2'],['VB2','VB1'])
     d2=Deskriptorsatz('Python',['Bf1','Bf2'],['BS1','BS2'],['SB'],['OB1','OB2'],['UB1','UB2'],['VB1','VB2'])
