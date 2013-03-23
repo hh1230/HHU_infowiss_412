@@ -47,27 +47,85 @@ class Thesaurus():
         """
         self.projectname=name
         self.inhalts={}
+        self.bglist=[]
         print "Thesaurus {t} wird erfolgrich erzeugt!\nBitte sprichern!\n".format(t=self.projectname)
+
+
     def __repr__(self):
         return "   {projectname}\n{line}\n{de}\n{line}".format(projectname=self.projectname,line='-'*20,de=self.inhalts.keys())
 
     def search_ds(self, bf):
         """
-        Hier wird eine Funktionen definiert, die mit Suchen nach Deskriptorsatz zu tun haben.
+        search_ds(self,bf) ist eine Methode, die nach eingegebenen Deskriptor sucht. 
 
-        搜索词条方法，搜索应该分两种，一种是搜索词条，如果词条搜索成功，就返回词词条；
-        如果词条搜索失败，就调用关键字搜索，搜索每一个词条内的每一个子项。
-        这里定义的是搜索词条方法
+        搜索词条方法: 如果词条搜索成功，就返回词词条.
         """
         if isinstance(bf,str):
             try:
                 if self.inhalts.has_key(bf):
-                    print "{bf} wird erfolgrich gefunden!".format(bf=bf)
-                    print self.inhalts[bf]
+                    return True
                 else:
-                    raise Exception()
+                    return False
             except:
-                print "Sorry! {bf} wird nicht gefunden".format(bf=bf)
+                print "Exception:\nseach_ds() in Class Thesaurus."
+
+                
+    def search(self,nbg):
+        """
+        search(self,nbg) ist eine Instancemethode von Class Thesaurus.
+        Sie suche nach das eingegebennen String als Stichwort.
+        Return True und print Deskriptorsatz, falls gefunden;
+        Return False,sonst.
+
+        辞典的关键字搜索，传入一个字符串用作搜索参数。
+        如果找到，则打印出包含这个字符串的字条，并且返回True；
+        否则，返回False。
+        """
+        try:
+            self.update_bglist()
+            if nbg in self.bglist:
+                if self.search_ds(nbg):
+                    print self.inhalts[nbg]
+                    return True
+                else:
+                    for ds in self.inhalts.keys():
+                        if self.inhalts[ds].search_bg(nbg):
+                            print self.inhalts[ds]
+                    return True
+            else:
+                return False
+        except:
+            print "Exception:\nsearch_bg() in Class Thesaurus."
+                
+                
+
+
+    def collect_bglist(self):
+        """
+        collocet_bg(self) ist eine Instancemethode von Class Thesaurus.
+        Sie sammelet alle Begriifen in Thesaurus an,
+        und speichert diese Information in self.bglist.
+
+        搜集概念方法：
+        这个方法是一个辞典类的实例方法，用于把所有实例包含的概念都保存在
+        实例自己的bglist列表型属性内。以供关键字搜索。
+        """
+        dslist=[]
+        try:
+            for ds in self.inhalts.keys():
+                for item in self.inhalts[ds].__dict__.keys():
+                    if (item is 'bglist'):
+                        dslist.extend(self.inhalts[ds].__dict__[item])
+            return dslist
+        except:
+            print "Exception:\ncollect_ds()."
+
+    def update_bglist(self):
+        try:
+            self.bglist=self.collect_bglist()
+        except:
+            print "Exception:\nupdate_bg(self) in Class Thesaurus."
+    
                 
     def add_ds(self,ds):
         """
@@ -656,15 +714,52 @@ class Deskriptorsatz:
     #------------------------------------------------------
 
     
-    def del_bf(self,bf):
-        try:
-            if isinstance(bf,str):
-                self.bf.remove(bf)
-                print "BF {bf} wurde von '{deskriptor}' erfogreich geloescht.'".format(bf=bf, deskriptor=self.deskriptor)
-                print self
-        except:
-            print "Bittle ein String als Argument geben.\nDie schon existierte BF sind:{bf}.".format(bf=self.bf)
+    def del_bg(self,bf):
+        """
+        del_bg(self,bg) ist eine Instancemethode von Class Deksriptorsatz.
+        Sie loescht bf in dem Deskriptorsatz.
 
+        删除概念方法。这个方法是一个词条类的实例方法，由实例调用。
+        传入一个字符串形式参数，并在词条内寻找这个参数然后删除它。
+        """
+        try:
+            if isinstance(bf,str) and (bf in self.bglist) and (not bf is self.deskriptor):
+                for key in self.__dict__.keys():
+                    if bf in self.__dict__[key] and isinstance(self.__dict__[key],list):
+                        self.__dict__[key].remove(bf)
+                        print "BF {bf} wurde von '{deskriptor}' erfogreich geloescht.'".format(bf=bf, deskriptor=self.deskriptor)
+                        print self
+            else:
+                print "Error:\n{bf} wurden nicht in {ds} gefunden!".format(bf=bf,ds=self.deskriptor)
+                raise Exception()
+        except:
+            print "Exception:\ndel_bf().Bittle ein String als Argument geben."
+        finally:
+            self.update_bglist()
+
+    def search_bg(self,sbg):
+        """
+        search_bg(self,sbg) ist eine Instance Methode von Class Deskriptorsatz.
+        Sie braucht einen Begriffe als Argument,
+        und suchen nach den Begriffe in dem Deskriptosatz.
+        Return True, falls gefunden.Sonst, return False.
+        Diese Methode dient fuer die Methode search_bg() von Class Thesaurus,
+        um einen Begriff in ganz Thesaurus zu finden.
+
+        词条实例概念搜索方法：
+        这是一个词条类的实例所拥有的方法，用于搜索被传入的字符串参数.
+        这个方法一般不自己调用，他作用于辞典类的search_bg()方法。
+        """
+        try:
+            if isinstance(sbg,str):
+                if (sbg in self.bglist):
+                    return True
+                else:
+                    return False
+            else:
+                raise Exception()
+        except:
+            print "Exception:\nsearch_bg(self,sbg)in Class Deskriptorsatz."
 
 
                     
@@ -682,7 +777,7 @@ if __name__ == '__main__':
     d=Deskriptorsatz
     t=Thesaurus    
     d1=Deskriptorsatz('Infowiss',['Bf1','Bf2'],['BS1','BS2'],['SB'],['OB1','OB2'],['UB1','UB2'],['VB2','VB1'])
-    d2=Deskriptorsatz('Python',['Bf1','Bf2'],['BS1','BS2'],['SB'],['OB1','OB2'],['UB1','UB2'],['VB1','VB2'])
+    d2=Deskriptorsatz('Python',['Bf1','Bf2'],['BS1','BS2'],['SB'],['OB1','OB2'],['UB1','UB2'],['B1','VB2'])
     d3=d('Goggle')
     d4=d('Baidu')
     t1.add_ds(d1)
