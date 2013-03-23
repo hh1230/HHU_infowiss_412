@@ -44,6 +44,7 @@ class Thesaurus():
         """
         self.projectname=name
         self.inhalts={}
+        print "Thesaurus {t} wird erfolgrich erzeugt!\nBitte sprichern!\n".format(t=self.projectname)
     def __repr__(self):
         return "   {projectname}\n{line}\n{de}\n{line}".format(projectname=self.projectname,line='-'*20,de=self.inhalts.keys())
 
@@ -78,7 +79,7 @@ class Thesaurus():
             try:
                 if not self.inhalts.has_key(ds.deskriptor):
                     self.inhalts[ds.deskriptor]=ds
-                    print self.inhalts.keys()
+                    print "{d} wird erfolgricht in {t} hinzufugt!\n{keys}\nBittle Speichern!".format(d=ds.deskriptor,t=self.projectname,keys=self.inhalts.keys())
                 else:
                     raise Exception()
             except:
@@ -125,10 +126,10 @@ class Thesaurus():
         """
         try:
             ouf=open(datenbank,'wb')
-            data=self.inhalts
+            data=self
             pickle.dump(data,ouf)
             ouf.close()
-            print "Thesaurus wird erfolgricht gespeichert!\n"
+            print "Thesaurus {t} wird erfolgricht gespeichert!\n".format(t=self.projectname)
         except:
             print "Nicht erfolgreicht gesprichert!\n"
 
@@ -141,7 +142,9 @@ class Thesaurus():
         """
         try:
             f=open(datenbank,'rb')
-            self.inhalts=pickle.load(f)
+            data=pickle.load(f)
+            self.projectname=data.projectname
+            self.inhalts=data.inhalts
             f.close()
             print "Thesaurus {name} wird erfolgricht gelaedt!".format(name=self.projectname)
             print self.inhalts.keys()
@@ -196,7 +199,7 @@ class Deskriptorsatz:
             self.ob=ob
             self.ub=ub
             self.vb=vb
-            print self
+            print "Deskriptor '{ds}' wird erzeugt:{self}".format(ds=self.deskriptor,self=self)
         except:
             print "Exception:\n__init__() wird nicht erfolgrich angeruft.\nVielleicht du hast ein schon existierte Deskriptor hinzufuegt!\n "
         
@@ -217,7 +220,7 @@ class Deskriptorsatz:
             ==============================
             
         """
-        return "\n  {deskriptor}\n{line}\nBF:{bf}\nBS:{bs}\nSB:{sb}\nOB:{ob}\nUB:{ub}\nVB:{vb}\n{stars}\n".format(deskriptor=self.deskriptor, bf=self.bf, bs=self.bs,sb=self.sb,ob=self.ob,ub=self.ub,vb=self.vb, stars='='*30,line='-'*30)
+        return "\n   {deskriptor}\n{line}\nBF:{bf}\nBS:{bs}\nSB:{sb}\nOB:{ob}\nUB:{ub}\nVB:{vb}\n{stars}\n".format(deskriptor=self.deskriptor, bf=self.bf, bs=self.bs,sb=self.sb,ob=self.ob,ub=self.ub,vb=self.vb, stars='='*30,line='-'*30)
 
 
     """
@@ -340,12 +343,11 @@ class Deskriptorsatz:
 
 
 if __name__ == '__main__':
-    t1=Thesaurus('Project412')
-    t1.load_thesaurus('t1_data.dat')
-    des=Deskriptorsatz
-    ds4=des('CCTV')
-    '''
+    t1=Thesaurus('t1')
+    d=Deskriptorsatz
+    t=Thesaurus    
     d1=Deskriptorsatz('Infowiss',['Bf1','Bf2'],['BS1','BS2'],['SB'],['OB1','OB2'],['UB1','UB2'],['VB2','VB1'])
     d2=Deskriptorsatz('Python',['Bf1','Bf2'],['BS1','BS2'],['SB'],['OB1','OB2'],['UB1','UB2'],['VB1','VB2'])
-    '''
+    #t1.add_ds(d1)
+    #t1.add_ds(d2)
 
