@@ -38,9 +38,11 @@ class Thesaurus():
         Konstruktor __init__(self,name):
         wir brachen eine String name als projectname.
         alle Informationen werden in eine Dict heisst inhalts gespeichert.
+        Alle Deksriptorsatze werden in disen inhalts nach Keys gespeichert.
 
         构造器函数 __init__(self，name):
-        需要传入一个name字符串参数用作项目名称标记
+        需要传入一个name字符串参数用作项目名称标记。
+        其次，我们用一个名为inhalts属性的字典类型来储存所有字条，这样的储存方式是按键key储存。
         """
         self.projectname=name
         self.inhalts={}
@@ -178,16 +180,22 @@ class Deskriptorsatz:
         Jede Instance ist ein Objekt. Sie hat Properties:
         deskriptor, bf, bs, sb, ob, ub und vb.
         Mann kan direckt durch Konstruktor ein Instance mit vorllstandigen Informationen bauen,
-        oder nur ein Instance mit deskriptor machen. Weiter mit methode Z.B op_add(rel, newbg) machen.
-
+        oder nur ein Instance mit deskriptor machen.
+        Weiter mit methode Z.B op_add(rel, newbg) machen.
+        Wir benutzen eine list heisst bglist um alle Begriiffe von diesem Desrkiptor zu sammelen und sprichern.
+        Ausserdem besitzt jedes Deskriptor eine list heisst bglist,
+        um allen Begriifen unter dem Deskriptor zu sammeln, durch anrufen von collect_bglist().
+        Das ist besser fuer Suchenfunktionen Entwicklung.
 
         这里是词条类 class Deskriptorsatz 的构造器。 形式参数列表解释如下：
         deskriptor 也就是这个词条的名称；
         bf， bs, sb, ob, ub, vb 的参数初始默认值是一个空列表类型。
         在构造之前会先检测这个词条是否已经在thesaurus中出现，
-        如果出现会抛出错误，告诉构造不成功。
+        如果已经出现了，会抛出错误，告诉构造不成功。
         我们用构造器来做添加词条的工具。
         在构造器完成后会打印这个已经构造好的词条。
+        此外，词条的每一个实例还有一个列表类型的属性叫做bglist，用于储存所有在这个词条下出现的概念，
+        这样有助于关键字搜索功能的开发。
         """
         try:
             if not isinstance(deskriptor,str):
@@ -199,6 +207,7 @@ class Deskriptorsatz:
             self.ob=ob
             self.ub=ub
             self.vb=vb
+            self.bglist=self.collect_bglist()
             print "Deskriptor '{ds}' wird erzeugt:{self}".format(ds=self.deskriptor,self=self)
         except:
             print "Exception:\n__init__() wird nicht erfolgrich angeruft.\nVielleicht du hast ein schon existierte Deskriptor hinzufuegt!\n "
@@ -223,14 +232,46 @@ class Deskriptorsatz:
         return "\n   {deskriptor}\n{line}\nBF:{bf}\nBS:{bs}\nSB:{sb}\nOB:{ob}\nUB:{ub}\nVB:{vb}\n{stars}\n".format(deskriptor=self.deskriptor, bf=self.bf, bs=self.bs,sb=self.sb,ob=self.ob,ub=self.ub,vb=self.vb, stars='='*30,line='-'*30)
 
 
-    """
-    Hier werden alle reset_xxx() methode definiert.
-    rest_reg() methoden machen alle Properties von Deskriptor leer.
-    
-    这里定义一些reset_xxx()方法，用作把每一个词条的各项子类清空。
-    """
+    #---------------------------------------------------------
+    #Hier werden alle reset_xxx() methode definiert.
+    #rest_reg() methoden machen alle Properties von Deskriptor leer.
+    #
+    #这里定义一些reset_xxx()方法，用作把每一个词条的各项子类清空。
+    #---------------------------------------------------------
 
-    def reset_all():
+
+    def collect_bglist(self):
+        """
+        Methoden collect_bg(self) ist eine Methode, um alle Begriffen von Deskriptor zu sammeln,
+        und speicher allen Begriffen jeweils Deskriptors in eine List heist newbglist.
+        Und return diesen newbglist.
+
+        搜集概念列表方法，这是一个词条类的实例方法，用于将这个词条实例包含的所有概念（字符串）搜集起来，
+        并且保存在一个名为newbglist的列表类型变量内，
+        然后返回这个列表。
+        """
+        newbglist=[]
+        for key in self.__dict__.keys():
+            if isinstance(self.__dict__[key],list):
+                newbglist.extend(self.__dict__[key])
+            elif isinstance(self.__dict__[key],str):
+                newbglist.append(self.__dict__[key])
+        return newbglist
+
+    def update_bglist(self):
+        """
+        update_bglist(self) ist eine Instance Methode von Class Deskriptorsatz,
+        um die self.bglist upzudate. Mit hilfe von Methode collect_bglist().
+        Sie wird angeruft nach jede Veranderung eines Desekriptor.
+
+        更新概念列表方法，这是一个词条类的实例方法。
+        用于在每一次词条发生改变之后更新词条实例的bglist属性。
+        """
+        self.bglist=[]
+        newbglist=self.collect_bglist()
+        self.bglist=newbglist
+    
+    def reset_all(self):
         """
         Hier werden alle reset_xxx() methode definiert.
         rest_reg() methoden machen alle Properties von Deskriptor leer.
@@ -243,6 +284,7 @@ class Deskriptorsatz:
         self.ob = [];
         self.ub = [];
         self.vb = [];
+        self.update_bglist()
         print self;
     
     def reset_bf(self):
@@ -252,6 +294,8 @@ class Deskriptorsatz:
             print self
         except:
             print "Methode reset_bf ist kappt"
+        finally:
+            self.update_bglist()
 
     def reset_bs(self):
         try:
@@ -260,6 +304,8 @@ class Deskriptorsatz:
             print self
         except:
             print "Methode reset_bf ist kappt"
+        finally:
+            self.update_bglist()
 
     def reset_sb(self):
         try:
@@ -268,6 +314,8 @@ class Deskriptorsatz:
             print self
         except:
             print "Methode reset_bf ist kappt"
+        finally:
+            self.update_bglist()
 
     def reset_ob(self):
         try:
@@ -276,6 +324,8 @@ class Deskriptorsatz:
             print self
         except:
             print "Methode reset_bf ist kappt"
+        finally:
+            self.update_bglist()
 
     def reset_ub(self):
         try:
@@ -284,6 +334,8 @@ class Deskriptorsatz:
             print self
         except:
             print "Methode reset_bf ist kappt"
+        finally:
+            self.update_bglist()
 
     def reset_vb(self):
         try:
@@ -292,6 +344,8 @@ class Deskriptorsatz:
             print self
         except:
             print "Methode reset_bf ist kappt"
+        finally:
+            self.update_bglist()
 
 
     #------------------------------------------------------
@@ -306,8 +360,43 @@ class Deskriptorsatz:
     #------------------------------------------------------
 
     def add_bf(self,newbf):
-        pass
-                    
+        """
+        add_bf(self,newbf) ist eine Instancemethode von Class Deskriptorsatz,
+        um eine List oder eine String in BF hinzufugen.
+        Sie ueberprueft, ob das eigegebene String schon in dem Deskriptorsatz.
+        Dann ueberprueft, ob die Argument eine List oder eine String sind.
+
+        添加BF方法，这是一个词条类的实例方法，用作往词条实例添加概念。
+        首先这个方法会验证，这个需要被添加的实例是否已经存在在这个实例中，如果是的话，
+        这返回提示，并且抛出错误
+        """
+        try:
+            if newbf in self.bglist:
+                print "Error:\n{newbf} ist schon in {ds}.\nSie koennen nicht Dupulicate machen!".format(newbf=newbf,ds=self.deskriptor)
+                print self
+                raise Exception()
+            elif isinstance(newbf,str):
+                if not newbf in self.bf:
+                    self.bf.append(newbf)
+                    print "{nbf} wird erfolgreich in BF von '{ds}' hinzufuegt.".format(nbf=newbf,ds=self.deskriptor)
+                else:
+                    print "Error:\n{nbf} ist schon in BF von '{ds}'.Es kann nicht hinzufuegt werden!".format(nbf=newbf,ds=self.deskriptor)
+                    raise Exception()
+            elif isinstance(newbf,list):
+                for e in newbf:
+                    if (not e in self.bglist) and isinstance(e,str):
+                        self.bf.append(e)
+                        print "{e} wird erfolrciht in BF von '{ds} hinzufuegt'.".format(e=e,ds=self.deskriptor)
+                    else:
+                        print "Error:\n{e} ist schon in {ds}.\nSie koennen nicht Dupulicate machen!".format(e=e,ds=self.deskriptor)
+                        print self
+                        raise Exception()
+            else:
+                raise Exception()
+        except:
+            print "Exception bei add_bf().\nBitte eine String oder eine Liste von String als Argument eingeben."
+        finally:
+            self.update_bglist()
             
 
 
@@ -321,6 +410,8 @@ class Deskriptorsatz:
     #这里定义一些删除字条字项的方法，因为我们用字典来保存子项的每一个属性，如果是删除子项里面的一个字符串，
     #则需要传入字符串作为形式参数。如果是想清空子项，或者完全清空，将调用reset_reg()方法。
     #------------------------------------------------------
+
+    
     def del_bf(self,bf):
         try:
             if isinstance(bf,str):
@@ -348,6 +439,11 @@ if __name__ == '__main__':
     t=Thesaurus    
     d1=Deskriptorsatz('Infowiss',['Bf1','Bf2'],['BS1','BS2'],['SB'],['OB1','OB2'],['UB1','UB2'],['VB2','VB1'])
     d2=Deskriptorsatz('Python',['Bf1','Bf2'],['BS1','BS2'],['SB'],['OB1','OB2'],['UB1','UB2'],['VB1','VB2'])
-    #t1.add_ds(d1)
-    #t1.add_ds(d2)
-
+    d3=d('Goggle')
+    d4=d('Baidu')
+    t1.add_ds(d1)
+    t1.add_ds(d2)
+    t1.add_ds(d3)
+    t1.save_thesaurus('t1_data.dat')
+    t1.load_thesaurus('t1_data.dat')
+    
