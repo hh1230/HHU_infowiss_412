@@ -53,6 +53,7 @@ class Thesaurus():
         self.projectname=name
         self.inhalts={}
         self.bglist=[]
+        self.update_bglist()
         print "Thesaurus {t} wird erfolgrich erzeugt!\nBitte sprichern!\n".format(t=self.projectname)
 
 
@@ -67,6 +68,16 @@ class Thesaurus():
         """
         return "   {projectname}\n{line}\n{de}\n{line}".format(projectname=self.projectname,line='-'*20,de=self.inhalts.keys())
 
+
+    #--------------------------------------------
+    #Hier werden zwei Suchen Methoden definiet,
+    #Eine ist search_ds(), die mit Suchen nach Deskriptor zu tun hat.
+    #Eine ist search(), die eine Stichwort-Sucher ist.
+    #
+    #这里定义两个搜索方法：
+    #一个是搜索词条方法search_ds()，用来搜索指定词条。
+    #一个是搜索关键字方法search(),用来在整个辞典内按关键字搜索。
+    #--------------------------------------------
     def search_ds(self, bf):
         """
         search_ds(self,bf) ist eine Methode, die nach eingegebenen Deskriptor sucht. 
@@ -139,7 +150,15 @@ class Thesaurus():
             self.bglist=self.collect_bglist()
         except:
             print "Exception:\nupdate_bg(self) in Class Thesaurus."
-    
+
+    #----------------------------------------
+    #Hier werden einigen Operator Funktionen definier,
+    #ZB: add_ds(), del_ds()
+    #
+    #这里定义一些辞典类实例的操作方法：
+    #比如添加词条，删除词条等
+    #----------------------------------------
+        
                 
     def add_ds(self,ds):
         """
@@ -169,7 +188,7 @@ class Thesaurus():
                 
 
 
-    def delete_ds(self, bf):
+    def del_ds(self, bf):
         """
         delete_ds(self,bf) ist eine Methode von Instance der Thesaurus,
         um einen gegebenen Deskriptorsatz zu loeschen.
@@ -194,6 +213,27 @@ class Thesaurus():
         else:
             print "Error:\ndelete_ds(self,bf) barucht eine Instance von Thesauruse anzurufen\n und ein basestringing als argument!"
             return False
+
+    def get_ds(self,ds):
+        """
+        
+        """
+        try:
+            if isinstance(ds,basestring) and (ds in self.inhalts.keys()):
+                return self.inhalts[ds]
+            else:
+                raise Exception()
+        except:
+            print "{ds} wird nicht erfolgrich angeruft".format(ds=ds)
+        
+    
+        
+    #--------------------------------------------------
+    #Hier werden viele Methoden, die mit Sprichern oder Im/EXport
+    #Funktionen zu tun haben, definiet.
+    #
+    #这里将定义一些与保存，导入，导出功能相关的方法。
+    #--------------------------------------------------
             
     def save_thesaurus(self):
         """
@@ -204,6 +244,7 @@ class Thesaurus():
         
         我们要将这个Thesaurus辞典类的实例持久化保存，通过save_thesaurus方法。
         这是一个有参数的方法，直接新建一个根据传入的字符串参数作为数据库名称的文档把对象转化为字节码储存。
+        并且自动储存在一个以.projectname明白的.dat文档内
         """
         try:
             filename=self.projectname+'.dat'
@@ -227,8 +268,7 @@ class Thesaurus():
         try:
             f=open(datenbank,'rb')
             data=pickle.load(f)
-            self.projectname=data.projectname
-            self.inhalts=data.inhalts
+            self=data
             f.close()
             print "Thesaurus {name} wird erfolgricht gelaedt!".format(name=self.projectname)
             print self.inhalts.keys()
@@ -239,25 +279,57 @@ class Thesaurus():
     
 
     def export_ds_json(self):
+        """
+        export_ds_json():
+        Diese Mehtode macht eine Export von Instance Thesaurus,und
+        speichert die .inhalts eine Thesaurus Instance in einen .json Datein,
+        mit den Name von .peojectname.
+
+        导出json方法：
+        这个方法是辞典类实例方法，辞典类的实例调用这个方法，不需要其他参数。
+        这是将自动以辞典实例的.projectname属性为文件名，在本地磁盘生成这个
+        projectname.json的文档。
+        然后将这个辞典含有的所有词条信息通过dump()方法，保存在这个.json文档内。
+        这样就完成了json的输出。
+        """
         try:
             filename=self.projectname+'.json'
             with open(filename,mode='w') as f:
                 data={}
                 for key in self.inhalts.keys():
                     data[key]=self.inhalts[key].__dict__
-                json.dump(data,f,indent=4,encoding='utf-8')
+                json.dump(data,f,indent=4,encoding='utf-8',skipkeys=True)
                 return True
         except:
             return False
 
     def import_ds_json(self,filename):
+        """
+        import_ds_json():
+        Diese Methode braucht eine String als Argument,um eine .json Datei
+        zu lesen. Dann mit die Information von dieser .json Datein erzeugt
+        Dekripotorsatz Instance und fuegt diese Deskriptorsatze in self.
+
+        导入json方法：
+        这个方法需要一个.json的文件名作为参数，并解析这个文件内读取到的信息。
+        然后通过调用词条内的构造器来生成符合这些信息的词条对象，并把这些对象
+        添加到这个辞典对象内。
+        """
         try:
             with open(filename, mode='r') as f:
-                data={}
                 data=json.load(f,encoding='utf-8')
-                self.inhalts.update(data)
+                for key in data.keys():
+                    d=Deskriptorsatz(data[key]['deskriptor'],
+                                   data[key]['bf'],
+                                   data[key]['bs'],
+                                   data[key]['sb'],
+                                   data[key]['ob'],
+                                   data[key]['vb'],
+                                   data[key]['ub'])
+                    self.add_ds(d)
                 return True      
         except:
+            print "{filename}.json wurde nicht gefunden und importiert.".format(filename=filename)
             return False
                 
             
@@ -870,5 +942,4 @@ if __name__ == '__main__':
     t1.add_ds(d2)
     t1.add_ds(d3)
     t1.save_thesaurus()
-    t1.load_thesaurus('t1_data.dat')
-    
+    t2=t('t2')

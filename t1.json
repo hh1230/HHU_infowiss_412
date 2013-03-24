@@ -4,8 +4,9 @@
             "Bf1", 
             "Bf2"
         ], 
-        "sb": [
-            "SB"
+        "bs": [
+            "BS1", 
+            "BS2"
         ], 
         "ob": [
             "OB1", 
@@ -29,9 +30,8 @@
             "UB1", 
             "UB2"
         ], 
-        "bs": [
-            "BS1", 
-            "BS2"
+        "sb": [
+            "SB"
         ], 
         "deskriptor": "Python", 
         "ub": [
@@ -44,8 +44,9 @@
             "Bf1", 
             "Bf2"
         ], 
-        "sb": [
-            "SB"
+        "bs": [
+            "BS1", 
+            "BS2"
         ], 
         "ob": [
             "OB1", 
@@ -69,9 +70,8 @@
             "UB1", 
             "UB2"
         ], 
-        "bs": [
-            "BS1", 
-            "BS2"
+        "sb": [
+            "SB"
         ], 
         "deskriptor": "Infowiss", 
         "ub": [
@@ -81,13 +81,13 @@
     }, 
     "Goggle": {
         "bf": [], 
-        "sb": [], 
+        "bs": [], 
         "ob": [], 
         "vb": [], 
         "bglist": [
             "Goggle"
         ], 
-        "bs": [], 
+        "sb": [], 
         "deskriptor": "Goggle", 
         "ub": []
     }
