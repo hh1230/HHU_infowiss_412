@@ -1,4 +1,5 @@
-# -*- coding:utf-8 -*-
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
 #File: thesaurus.py
 #Project: Projektseminar Gruppe 412
 #Project Member: Yuankun LUO & Jingwen Wu
@@ -18,6 +19,10 @@ Nach alle Operationen wird die Instance gespeichert.
 #Benutzen pickle Modul um Datein zu speichern  运用pickle模块来储存所有数据
 
 import pickle
+import xml
+import json
+
+
 
 
 #============================================================
@@ -36,8 +41,8 @@ class Thesaurus():
     
     def __init__(self, name):
         """
-        Konstruktor __init__(self,name):
-        wir brachen eine String name als projectname.
+        Konbasestringuktor __init__(self,name):
+        wir brachen eine basestringing name als projectname.
         alle Informationen werden in eine Dict heisst inhalts gespeichert.
         Alle Deksriptorsatze werden in disen inhalts nach Keys gespeichert.
 
@@ -52,6 +57,14 @@ class Thesaurus():
 
 
     def __repr__(self):
+        """
+        @Override __repr__:
+        um die Inhalts von Thesaurusinstance als eine List zu zeigen.
+
+        @重写__repr__:
+        为了在直输入辞典实例时，显示这个辞典实例所包含的的词条，
+        并且用一个list来显示。
+        """
         return "   {projectname}\n{line}\n{de}\n{line}".format(projectname=self.projectname,line='-'*20,de=self.inhalts.keys())
 
     def search_ds(self, bf):
@@ -60,9 +73,10 @@ class Thesaurus():
 
         搜索词条方法: 如果词条搜索成功，就返回词词条.
         """
-        if isinstance(bf,str):
+        if isinstance(bf,basestring):
             try:
                 if self.inhalts.has_key(bf):
+                    print self.inhalts[bf]
                     return True
                 else:
                     return False
@@ -73,7 +87,7 @@ class Thesaurus():
     def search(self,nbg):
         """
         search(self,nbg) ist eine Instancemethode von Class Thesaurus.
-        Sie suche nach das eingegebennen String als Stichwort.
+        Sie suche nach das eingegebennen basestringing als Stichwort.
         Return True und print Deskriptorsatz, falls gefunden;
         Return False,sonst.
 
@@ -141,11 +155,14 @@ class Thesaurus():
                 if not self.inhalts.has_key(ds.deskriptor):
                     self.inhalts[ds.deskriptor]=ds
                     print "{d} wird erfolgricht in {t} hinzufugt!\n{keys}\nBittle Speichern!".format(d=ds.deskriptor,t=self.projectname,keys=self.inhalts.keys())
+                    return True
                 else:
                     raise Exception()
+                    return False
             except:
                 print "Exception:\n{t} has schon {ds}, Sie koennen nicht Dupulicate hinzufugen.".format(t=self.projectname,ds=ds.deskriptor)
                 print self.inhalts.keys()
+                return False
         else:
             print "Error:\n Methode add_ds() braucht eine Instance von Class Deskriptorsatz als Argument."
         
@@ -156,26 +173,29 @@ class Thesaurus():
         """
         delete_ds(self,bf) ist eine Methode von Instance der Thesaurus,
         um einen gegebenen Deskriptorsatz zu loeschen.
-        Sie brucht ein String bf als formale Argument.
+        Sie brucht ein basestringing bf als formale Argument.
 
         删除词条方法：是一个辞典Thesaurus类的实例方法，由实例来调用。
         需要传入一个字符串参数，用作被删除的目标。
         """
-        if isinstance(bf,str):
+        if isinstance(bf,basestring):
             try:
                 if self.inhalts.has_key(bf):
                     self.inhalts.pop(bf)
                     print "{bf} wird erfolgricht von {t} entfernt!".format(bf=bf,t=self.projectname)
                     print "   {projectname}\n{line}\n{de}\n{line}".format(projectname=self.projectname,line='-'*20,de=self.inhalts.keys())
+                    return True
                 else:
                     raise Exception()
             except:
                 print "Exception:\nBei Anrufen von delete_ds(self,bf).\nEs gibt keine {bf} in {t}\n{t} has die forgenden Deskripotorsaetze:".format(bf=bf, t=self.projectname)
                 print self.inhalts.keys()
+                return False
         else:
-            print "Error:\ndelete_ds(self,bf) barucht eine Instance von Thesauruse anzurufen\n und ein String als argument!"
-
-    def save_thesaurus(self,datenbank):
+            print "Error:\ndelete_ds(self,bf) barucht eine Instance von Thesauruse anzurufen\n und ein basestringing als argument!"
+            return False
+            
+    def save_thesaurus(self):
         """
         save_thesaurus() ist eine Funktion, um die Instance von class Thesaurus zu speichern,
         wir bentuzen pickle modul, weil pickle ist einfache und schnell.
@@ -186,13 +206,16 @@ class Thesaurus():
         这是一个有参数的方法，直接新建一个根据传入的字符串参数作为数据库名称的文档把对象转化为字节码储存。
         """
         try:
-            ouf=open(datenbank,'wb')
+            filename=self.projectname+'.dat'
+            ouf=open(filename,'wb')
             data=self
             pickle.dump(data,ouf)
             ouf.close()
             print "Thesaurus {t} wird erfolgricht gespeichert!\n".format(t=self.projectname)
+            return True
         except:
             print "Nicht erfolgreicht gesprichert!\n"
+            return False
 
     def load_thesaurus(self, datenbank):
         """
@@ -209,10 +232,37 @@ class Thesaurus():
             f.close()
             print "Thesaurus {name} wird erfolgricht gelaedt!".format(name=self.projectname)
             print self.inhalts.keys()
+            return True
         except:
             print "Wird nicht erfolgricht gelaedet!"
+            return False
     
-    
+
+    def export_ds_json(self):
+        try:
+            filename=self.projectname+'.json'
+            with open(filename,mode='w') as f:
+                data={}
+                for key in self.inhalts.keys():
+                    data[key]=self.inhalts[key].__dict__
+                json.dump(data,f,indent=4,encoding='utf-8')
+                return True
+        except:
+            return False
+
+    def import_ds_json(self,filename):
+        try:
+            with open(filename, mode='r') as f:
+                data={}
+                data=json.load(f,encoding='utf-8')
+                self.inhalts.update(data)
+                return True      
+        except:
+            return False
+                
+            
+            
+                
 
 
 
@@ -227,19 +277,19 @@ class Thesaurus():
 class Deskriptorsatz:
     """
     Deskriptorsatz ist der Baustandteil von eine Thesaurus.
-    Alle Relation zwischen String werden als Eingenschaften von Deskriptorsatz
+    Alle Relation zwischen basestringing werden als Eingenschaften von Deskriptorsatz
     definiert.
     我们定义一个词条类来定义每一个词条，因为题目要求必须用到面向对象。
     """
     def __init__(self, deskriptor, bf=[], bs=[], sb=[], ob=[], ub=[], vb=[]):
         """
-        Konstructor von Klasse Deskriptorsatz,
+        Konbasestringuctor von Klasse Deskriptorsatz,
         um eine Instance von Deskriptorsatz zu bauen.
         Eine Instance von Deskriptorsatz wird direct in dict thesaurus hinzufuegt,
         durch die Befehlen thesaurus[deskriptor]=self.
         Jede Instance ist ein Objekt. Sie hat Properties:
         deskriptor, bf, bs, sb, ob, ub und vb.
-        Mann kan direckt durch Konstruktor ein Instance
+        Mann kan direckt durch Konbasestringuktor ein Instance
         mit vorllstandigen Informationen bauen,
         oder nur ein Instance mit deskriptor machen.
         Weiter mit methode Z.B op_add(rel, newbg) machen.
@@ -261,7 +311,7 @@ class Deskriptorsatz:
         这样有助于关键字搜索功能的开发。
         """
         try:
-            if not isinstance(deskriptor,str):
+            if not isinstance(deskriptor,basestring):
                 raise Exception()
             self.deskriptor=deskriptor
             self.bf=bf
@@ -271,10 +321,10 @@ class Deskriptorsatz:
             self.ub=ub
             self.vb=vb
             self.bglist=self.collect_bglist()
-            print "Deskriptor '{ds}' wird erzeugt:{self}".format(ds=self.deskriptor,self=self)
+            #print "Deskriptor '{ds}' wird erzeugt:{self}".format(ds=self.deskriptor,self=self)
         except:
             print "Exception:\n__init__() wird nicht erfolgrich angeruft.\nVielleicht du hast ein schon existierte Deskriptor hinzufuegt!\n "
-        
+    
     def __repr__(self):
         """
         @override __repr__ funktion,
@@ -293,8 +343,8 @@ class Deskriptorsatz:
             
         """
         return "\n   {deskriptor}\n{line}\nBF:{bf}\nBS:{bs}\nSB:{sb}\nOB:{ob}\nUB:{ub}\nVB:{vb}\n{stars}\n".format(deskriptor=self.deskriptor, bf=self.bf, bs=self.bs,sb=self.sb,ob=self.ob,ub=self.ub,vb=self.vb, stars='='*30,line='-'*30)
-
-
+    
+    
     #---------------------------------------------------------
     #Hier werden alle reset_xxx() methode definiert.
     #rest_reg() methoden machen alle Properties von Deskriptor leer.
@@ -319,7 +369,7 @@ class Deskriptorsatz:
         for key in self.__dict__.keys():
             if isinstance(self.__dict__[key],list):
                 newbglist.extend(self.__dict__[key])
-            elif isinstance(self.__dict__[key],str):
+            elif isinstance(self.__dict__[key],basestring):
                 newbglist.append(self.__dict__[key])
         return newbglist
 
@@ -343,14 +393,19 @@ class Deskriptorsatz:
     
         这里定义一些reset_xxx()方法，用作把每一个词条的各项子类清空。
         """
-        self.bf = [];
-        self.bs = [];
-        self.sb = [];
-        self.ob = [];
-        self.ub = [];
-        self.vb = [];
-        self.update_bglist()
-        print self;
+        try:
+            self.bf = [];
+            self.bs = [];
+            self.sb = [];
+            self.ob = [];
+            self.ub = [];
+            self.vb = [];
+            self.update_bglist()
+            print self;
+            return True
+        except:
+            print "Exception:\n reset_all() in Class Deskriptorsatz."
+            return False
     
     def reset_bf(self):
         """
@@ -362,8 +417,10 @@ class Deskriptorsatz:
             self.bf=[]
             print "Der BF von {deskriptor} wird rueckgestellt.\n".format(deskriptor=self.deskriptor)
             print self
+            return True
         except:
             print "Methode reset_bf ist kappt"
+            return False
         finally:
             self.update_bglist()
 
@@ -377,8 +434,10 @@ class Deskriptorsatz:
             self.bs=[]
             print "Der BS von {deskriptor} wird rueckgestellt.\n".format(deskriptor=self.deskriptor)
             print self
+            return True
         except:
             print "Methode reset_bf ist kappt"
+            return False
         finally:
             self.update_bglist()
 
@@ -392,8 +451,10 @@ class Deskriptorsatz:
             self.sb=[]
             print "Der SB von {deskriptor} wird rueckgestellt.\n".format(deskriptor=self.deskriptor)
             print self
+            return True
         except:
             print "Methode reset_bf ist kappt"
+            return False
         finally:
             self.update_bglist()
 
@@ -407,8 +468,10 @@ class Deskriptorsatz:
             self.ob=[]
             print "Der OB von {deskriptor} wird rueckgestellt.\n".format(deskriptor=self.deskriptor)
             print self
+            return True
         except:
             print "Methode reset_bf ist kappt"
+            return False
         finally:
             self.update_bglist()
 
@@ -422,8 +485,10 @@ class Deskriptorsatz:
             self.ub=[]
             print "Der UB von {deskriptor} wird rueckgestellt.\n".format(deskriptor=self.deskriptor)
             print self
+            return True
         except:
             print "Methode reset_bf ist kappt"
+            return False
         finally:
             self.update_bglist()
 
@@ -437,8 +502,10 @@ class Deskriptorsatz:
             self.vb=[]
             print "Der VB von {deskriptor} wird rueckgestellt.\n".format(deskriptor=self.deskriptor)
             print self
+            return True
         except:
             print "Methode reset_bf ist kappt"
+            return False
         finally:
             self.update_bglist()
 
@@ -446,8 +513,8 @@ class Deskriptorsatz:
     #------------------------------------------------------
     #Hier werde alle add_reg() methode definiert.
     #reg kann als bf, bs ... benennen.
-    #Nur Sring oder eine Liste von String durfen hinzufuegt werden.
-    #Am besten, nur ein String als Argument eingeben, wenn mit GUI entwickeln.
+    #Nur Sring oder eine Liste von basestringing durfen hinzufuegt werden.
+    #Am besten, nur ein basestringing als Argument eingeben, wenn mit GUI entwickeln.
     #wir benutzen Variable item um den Ziel des add_xx() methoden auf zu zeigen.
     #
     #这里定义一些add_xxx()发法，都是字条类实例的方法
@@ -463,9 +530,9 @@ class Deskriptorsatz:
     def add_bf(self,newbf):
         """
         add_bf(self,newbf) ist eine Instancemethode von Class Deskriptorsatz,
-        um eine List oder eine String in BF hinzufugen.
-        Sie ueberprueft, ob das eigegebene String schon in dem Deskriptorsatz.
-        Dann ueberprueft, ob die Argument eine List oder eine String sind.
+        um eine List oder eine basestringing in BF hinzufugen.
+        Sie ueberprueft, ob das eigegebene basestringing schon in dem Deskriptorsatz.
+        Dann ueberprueft, ob die Argument eine List oder eine basestringing sind.
 
         添加BF方法，这是一个词条类的实例方法，用作往词条实例添加概念。
         首先这个方法会验证，这个需要被添加的实例是否已经存在在这个实例中，如果是的话，
@@ -477,18 +544,20 @@ class Deskriptorsatz:
                 print "Error:\n{newbf} ist schon in {ds}.\nSie koennen nicht Dupulicate machen!".format(newbf=newbf,ds=self.deskriptor)
                 print self
                 raise Exception()
-            elif isinstance(newbf,str):
+            elif isinstance(newbf,basestring):
                 if not newbf in item:
                     item.append(newbf)
                     print "{nbf} wird erfolgreich in '{ds}' hinzufuegt.".format(nbf=newbf,ds=self.deskriptor)
+                    return True
                 else:
                     print "Error:\n{nbf} ist schon in '{ds}'.Es kann nicht hinzufuegt werden!".format(nbf=newbf,ds=self.deskriptor)
                     raise Exception()
             elif isinstance(newbf,list):
                 for e in newbf:
-                    if (not e in self.bglist) and isinstance(e,str):
+                    if (not e in self.bglist) and isinstance(e,basestring):
                         item.append(e)
                         print "{e} wird erfolrciht in '{ds}' hinzufuegt.".format(e=e,ds=self.deskriptor)
+                        return True
                     else:
                         print "Error:\n{e} ist schon in '{ds}'.\nSie koennen nicht Dupulicate machen!".format(e=e,ds=self.deskriptor)
                         print self
@@ -496,16 +565,17 @@ class Deskriptorsatz:
             else:
                 raise Exception()
         except:
-            print "Exception bei add_bf().\nBitte eine String oder eine Liste von String als Argument eingeben."
+            print "Exception bei add_bf().\nBitte eine basestringing oder eine Liste von basestringing als Argument eingeben."
+            return False
         finally:
             self.update_bglist()
 
     def add_bs(self,newbf):
         """
         add_bs(self,newbf) ist eine Instancemethode von Class Deskriptorsatz,
-        um eine List oder eine String in BS hinzufugen.
-        Sie ueberprueft, ob das eigegebene String schon in dem Deskriptorsatz.
-        Dann ueberprueft, ob die Argument eine List oder eine String sind.
+        um eine List oder eine basestringing in BS hinzufugen.
+        Sie ueberprueft, ob das eigegebene basestringing schon in dem Deskriptorsatz.
+        Dann ueberprueft, ob die Argument eine List oder eine basestringing sind.
 
         添加BS方法，这是一个词条类的实例方法，用作往词条实例添加概念。
         首先这个方法会验证，这个需要被添加的实例是否已经存在在这个实例中，如果是的话，
@@ -517,18 +587,20 @@ class Deskriptorsatz:
                 print "Error:\n{newbf} ist schon in {ds}.\nSie koennen nicht Dupulicate machen!".format(newbf=newbf,ds=self.deskriptor)
                 print self
                 raise Exception()
-            elif isinstance(newbf,str):
+            elif isinstance(newbf,basestring):
                 if not newbf in item:
                     item.append(newbf)
                     print "{nbf} wird erfolgreich in '{ds}' hinzufuegt.".format(nbf=newbf,ds=self.deskriptor)
+                    return True
                 else:
                     print "Error:\n{nbf} ist schon in '{ds}'.Es kann nicht hinzufuegt werden!".format(nbf=newbf,ds=self.deskriptor)
                     raise Exception()
             elif isinstance(newbf,list):
                 for e in newbf:
-                    if (not e in self.bglist) and isinstance(e,str):
+                    if (not e in self.bglist) and isinstance(e,basestring):
                         item.append(e)
                         print "{e} wird erfolrciht in '{ds}' hinzufuegt.".format(e=e,ds=self.deskriptor)
+                        return True
                     else:
                         print "Error:\n{e} ist schon in '{ds}'.\nSie koennen nicht Dupulicate machen!".format(e=e,ds=self.deskriptor)
                         print self
@@ -536,16 +608,17 @@ class Deskriptorsatz:
             else:
                 raise Exception()
         except:
-            print "Exception bei add_bf().\nBitte eine String oder eine Liste von String als Argument eingeben."
+            print "Exception bei add_bf().\nBitte eine basestringing oder eine Liste von basestringing als Argument eingeben."
+            return False
         finally:
             self.update_bglist()
 
     def add_sb(self,newbf):
         """
         add_sb(self,newbf) ist eine Instancemethode von Class Deskriptorsatz,
-        um eine List oder eine String in SB hinzufugen.
-        Sie ueberprueft, ob das eigegebene String schon in dem Deskriptorsatz.
-        Dann ueberprueft, ob die Argument eine List oder eine String sind.
+        um eine List oder eine basestringing in SB hinzufugen.
+        Sie ueberprueft, ob das eigegebene basestringing schon in dem Deskriptorsatz.
+        Dann ueberprueft, ob die Argument eine List oder eine basestringing sind.
 
         添加SB方法，这是一个词条类的实例方法，用作往词条实例添加概念。
         首先这个方法会验证，这个需要被添加的实例是否已经存在在这个实例中，如果是的话，
@@ -557,18 +630,20 @@ class Deskriptorsatz:
                 print "Error:\n{newbf} ist schon in {ds}.\nSie koennen nicht Dupulicate machen!".format(newbf=newbf,ds=self.deskriptor)
                 print self
                 raise Exception()
-            elif isinstance(newbf,str):
+            elif isinstance(newbf,basestring):
                 if not newbf in item:
                     item.append(newbf)
                     print "{nbf} wird erfolgreich in '{ds}' hinzufuegt.".format(nbf=newbf,ds=self.deskriptor)
+                    return True
                 else:
                     print "Error:\n{nbf} ist schon in '{ds}'.Es kann nicht hinzufuegt werden!".format(nbf=newbf,ds=self.deskriptor)
                     raise Exception()
             elif isinstance(newbf,list):
                 for e in newbf:
-                    if (not e in self.bglist) and isinstance(e,str):
+                    if (not e in self.bglist) and isinstance(e,basestring):
                         item.append(e)
                         print "{e} wird erfolrciht in '{ds}' hinzufuegt.".format(e=e,ds=self.deskriptor)
+                        return True
                     else:
                         print "Error:\n{e} ist schon in '{ds}'.\nSie koennen nicht Dupulicate machen!".format(e=e,ds=self.deskriptor)
                         print self
@@ -576,16 +651,17 @@ class Deskriptorsatz:
             else:
                 raise Exception()
         except:
-            print "Exception bei add_bf().\nBitte eine String oder eine Liste von String als Argument eingeben."
+            print "Exception bei add_bf().\nBitte eine basestringing oder eine Liste von basestringing als Argument eingeben."
+            return False
         finally:
             self.update_bglist()
 
     def add_ob(self,newbf):
         """
         add_ob(self,newbf) ist eine Instancemethode von Class Deskriptorsatz,
-        um eine List oder eine String in OB hinzufugen.
-        Sie ueberprueft, ob das eigegebene String schon in dem Deskriptorsatz.
-        Dann ueberprueft, ob die Argument eine List oder eine String sind.
+        um eine List oder eine basestringing in OB hinzufugen.
+        Sie ueberprueft, ob das eigegebene basestringing schon in dem Deskriptorsatz.
+        Dann ueberprueft, ob die Argument eine List oder eine basestringing sind.
 
         添加OB方法，这是一个词条类的实例方法，用作往词条实例添加概念。
         首先这个方法会验证，这个需要被添加的实例是否已经存在在这个实例中，如果是的话，
@@ -597,18 +673,20 @@ class Deskriptorsatz:
                 print "Error:\n{newbf} ist schon in {ds}.\nSie koennen nicht Dupulicate machen!".format(newbf=newbf,ds=self.deskriptor)
                 print self
                 raise Exception()
-            elif isinstance(newbf,str):
+            elif isinstance(newbf,basestring):
                 if not newbf in item:
                     item.append(newbf)
                     print "{nbf} wird erfolgreich in '{ds}' hinzufuegt.".format(nbf=newbf,ds=self.deskriptor)
+                    return True
                 else:
                     print "Error:\n{nbf} ist schon in '{ds}'.Es kann nicht hinzufuegt werden!".format(nbf=newbf,ds=self.deskriptor)
                     raise Exception()
             elif isinstance(newbf,list):
                 for e in newbf:
-                    if (not e in self.bglist) and isinstance(e,str):
+                    if (not e in self.bglist) and isinstance(e,basestring):
                         item.append(e)
                         print "{e} wird erfolrciht in '{ds}' hinzufuegt.".format(e=e,ds=self.deskriptor)
+                        return True
                     else:
                         print "Error:\n{e} ist schon in '{ds}'.\nSie koennen nicht Dupulicate machen!".format(e=e,ds=self.deskriptor)
                         print self
@@ -616,16 +694,17 @@ class Deskriptorsatz:
             else:
                 raise Exception()
         except:
-            print "Exception bei add_bf().\nBitte eine String oder eine Liste von String als Argument eingeben."
+            print "Exception bei add_bf().\nBitte eine basestringing oder eine Liste von basestringing als Argument eingeben."
+            return False
         finally:
             self.update_bglist()
 
     def add_ub(self,newbf):
         """
         add_ub(self,newbf) ist eine Instancemethode von Class Deskriptorsatz,
-        um eine List oder eine String in UB hinzufugen.
-        Sie ueberprueft, ob das eigegebene String schon in dem Deskriptorsatz.
-        Dann ueberprueft, ob die Argument eine List oder eine String sind.
+        um eine List oder eine basestringing in UB hinzufugen.
+        Sie ueberprueft, ob das eigegebene basestringing schon in dem Deskriptorsatz.
+        Dann ueberprueft, ob die Argument eine List oder eine basestringing sind.
 
         添加UB方法，这是一个词条类的实例方法，用作往词条实例添加概念。
         首先这个方法会验证，这个需要被添加的实例是否已经存在在这个实例中，如果是的话，
@@ -637,18 +716,20 @@ class Deskriptorsatz:
                 print "Error:\n{newbf} ist schon in {ds}.\nSie koennen nicht Dupulicate machen!".format(newbf=newbf,ds=self.deskriptor)
                 print self
                 raise Exception()
-            elif isinstance(newbf,str):
+            elif isinstance(newbf,basestring):
                 if not newbf in item:
                     item.append(newbf)
                     print "{nbf} wird erfolgreich in '{ds}' hinzufuegt.".format(nbf=newbf,ds=self.deskriptor)
+                    return True
                 else:
                     print "Error:\n{nbf} ist schon in '{ds}'.Es kann nicht hinzufuegt werden!".format(nbf=newbf,ds=self.deskriptor)
                     raise Exception()
             elif isinstance(newbf,list):
                 for e in newbf:
-                    if (not e in self.bglist) and isinstance(e,str):
+                    if (not e in self.bglist) and isinstance(e,basestring):
                         item.append(e)
                         print "{e} wird erfolrciht in '{ds}' hinzufuegt.".format(e=e,ds=self.deskriptor)
+                        return True
                     else:
                         print "Error:\n{e} ist schon in '{ds}'.\nSie koennen nicht Dupulicate machen!".format(e=e,ds=self.deskriptor)
                         print self
@@ -656,16 +737,17 @@ class Deskriptorsatz:
             else:
                 raise Exception()
         except:
-            print "Exception bei add_bf().\nBitte eine String oder eine Liste von String als Argument eingeben."
+            print "Exception bei add_bf().\nBitte eine basestringing oder eine Liste von basestringing als Argument eingeben."
+            return False
         finally:
             self.update_bglist()
 
     def add_vb(self,newbf):
         """
         add_vb(self,newbf) ist eine Instancemethode von Class Deskriptorsatz,
-        um eine List oder eine String in VB hinzufugen.
-        Sie ueberprueft, ob das eigegebene String schon in dem Deskriptorsatz.
-        Dann ueberprueft, ob die Argument eine List oder eine String sind.
+        um eine List oder eine basestringing in VB hinzufugen.
+        Sie ueberprueft, ob das eigegebene basestringing schon in dem Deskriptorsatz.
+        Dann ueberprueft, ob die Argument eine List oder eine basestringing sind.
 
         添加VB方法，这是一个词条类的实例方法，用作往词条实例添加概念。
         首先这个方法会验证，这个需要被添加的实例是否已经存在在这个实例中，如果是的话，
@@ -677,18 +759,20 @@ class Deskriptorsatz:
                 print "Error:\n{newbf} ist schon in {ds}.\nSie koennen nicht Dupulicate machen!".format(newbf=newbf,ds=self.deskriptor)
                 print self
                 raise Exception()
-            elif isinstance(newbf,str):
+            elif isinstance(newbf,basestring):
                 if not newbf in item:
                     item.append(newbf)
                     print "{nbf} wird erfolgreich in '{ds}' hinzufuegt.".format(nbf=newbf,ds=self.deskriptor)
+                    return True
                 else:
                     print "Error:\n{nbf} ist schon in '{ds}'.Es kann nicht hinzufuegt werden!".format(nbf=newbf,ds=self.deskriptor)
                     raise Exception()
             elif isinstance(newbf,list):
                 for e in newbf:
-                    if (not e in self.bglist) and isinstance(e,str):
+                    if (not e in self.bglist) and isinstance(e,basestring):
                         item.append(e)
                         print "{e} wird erfolrciht in '{ds}' hinzufuegt.".format(e=e,ds=self.deskriptor)
+                        return True
                     else:
                         print "Error:\n{e} ist schon in '{ds}'.\nSie koennen nicht Dupulicate machen!".format(e=e,ds=self.deskriptor)
                         print self
@@ -696,7 +780,8 @@ class Deskriptorsatz:
             else:
                 raise Exception()
         except:
-            print "Exception bei add_bf().\nBitte eine String oder eine Liste von String als Argument eingeben."
+            print "Exception bei add_bf().\nBitte eine basestringing oder eine Liste von basestringing als Argument eingeben."
+            return False
         finally:
             self.update_bglist()
             
@@ -723,17 +808,19 @@ class Deskriptorsatz:
         传入一个字符串形式参数，并在词条内寻找这个参数然后删除它。
         """
         try:
-            if isinstance(bf,str) and (bf in self.bglist) and (not bf is self.deskriptor):
+            if isinstance(bf,basestring) and (bf in self.bglist) and (not bf is self.deskriptor):
                 for key in self.__dict__.keys():
                     if bf in self.__dict__[key] and isinstance(self.__dict__[key],list):
                         self.__dict__[key].remove(bf)
                         print "BF {bf} wurde von '{deskriptor}' erfogreich geloescht.'".format(bf=bf, deskriptor=self.deskriptor)
                         print self
+                        return True
             else:
                 print "Error:\n{bf} wurden nicht in {ds} gefunden!".format(bf=bf,ds=self.deskriptor)
                 raise Exception()
         except:
-            print "Exception:\ndel_bf().Bittle ein String als Argument geben."
+            print "Exception:\ndel_bf().Bittle ein basestringing als Argument geben."
+            return False
         finally:
             self.update_bglist()
 
@@ -751,7 +838,7 @@ class Deskriptorsatz:
         这个方法一般不自己调用，他作用于辞典类的search_bg()方法。
         """
         try:
-            if isinstance(sbg,str):
+            if isinstance(sbg,basestring):
                 if (sbg in self.bglist):
                     return True
                 else:
@@ -762,7 +849,6 @@ class Deskriptorsatz:
             print "Exception:\nsearch_bg(self,sbg)in Class Deskriptorsatz."
 
 
-                    
 
 
 #===================================================================
@@ -783,6 +869,6 @@ if __name__ == '__main__':
     t1.add_ds(d1)
     t1.add_ds(d2)
     t1.add_ds(d3)
-    t1.save_thesaurus('t1_data.dat')
+    t1.save_thesaurus()
     t1.load_thesaurus('t1_data.dat')
     
